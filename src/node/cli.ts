@@ -125,6 +125,7 @@ async function runServe(options: UserConfig) {
   const server = require('./server').createServer(options)
 
   let port = options.port || 3000
+  let host = options.host || '127.0.0.1'
   let hostname = options.hostname || 'localhost'
   const protocol = options.https ? 'https' : 'http'
 
@@ -147,7 +148,12 @@ async function runServe(options: UserConfig) {
     const interfaces = os.networkInterfaces()
     Object.keys(interfaces).forEach((key) => {
       ;(interfaces[key] || [])
-        .filter((details) => details.family === 'IPv4')
+        .filter(
+          (details) =>
+            details.family === 'IPv4' &&
+            // Filter network interfaces if host != 0.0.0.0
+            (host === '0.0.0.0' || details.address.includes(host))
+        )
         .map((detail) => {
           return {
             type: detail.address.includes('127.0.0.1')
